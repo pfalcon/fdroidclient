@@ -119,6 +119,7 @@ public class ManageRepo extends ListActivity {
 
         for (DB.Repo repo : repos) {
             server_line = new HashMap<String, Object>();
+            server_line.put("name", repo.name);
             server_line.put("address", repo.address);
             if (repo.inuse) {
                 server_line.put("inuse", R.drawable.btn_check_on);
@@ -146,8 +147,8 @@ public class ManageRepo extends ListActivity {
             result.add(server_line);
         }
         SimpleAdapter show_out = new SimpleAdapter(this, result,
-                R.layout.repolisticons, new String[] { "address", "inuse",
-                        "fingerprint" }, new int[] { R.id.uri, R.id.img,
+                R.layout.repolisticons, new String[] { "name", "address", "inuse",
+                        "fingerprint" }, new int[] { R.id.repo_name, R.id.uri, R.id.img,
                         R.id.fingerprint });
 
         setListAdapter(show_out);
@@ -204,9 +205,12 @@ public class ManageRepo extends ListActivity {
                             EditText uri = (EditText) alrt
                                     .findViewById(R.id.edit_uri);
                             String uri_str = uri.getText().toString();
+                            EditText name = (EditText) alrt
+                                    .findViewById(R.id.edit_repo_name);
+                            String name_str = name.getText().toString();
                             try {
                                 DB db = DB.getDB();
-                                db.addRepo(uri_str, null, null, 10, null, true);
+                                db.addRepo(uri_str, name_str, null, 10, null, true);
                             } finally {
                                 DB.releaseDB();
                             }

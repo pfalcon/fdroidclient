@@ -378,6 +378,7 @@ public class DB {
 
     public static class Repo {
         public int id;
+        public String name; // short name for easy identification
         public String address;
         public String name;
         public String description;
@@ -426,6 +427,8 @@ public class DB {
 
             db.execSQL(CREATE_TABLE_REPO);
             ContentValues values = new ContentValues();
+            values.put("name",
+                    mContext.getString(R.string.default_repo_name));
             values.put("address",
                     mContext.getString(R.string.default_repo_address));
             values.put("name",
@@ -1332,6 +1335,7 @@ public class DB {
         values.put("priority", repo.priority);
         values.put("pubkey", repo.pubkey);
         values.put("lastetag", (String) null);
+        values.put("name", repo.name);
         db.update(TABLE_REPO, values, "address = ?",
                 new String[] { repo.address });
     }
@@ -1346,6 +1350,7 @@ public class DB {
     public void addRepo(String address, String name, String description,
             int priority, String pubkey, boolean inuse) {
         ContentValues values = new ContentValues();
+        values.put("name", name);
         values.put("address", address);
         values.put("name", name);
         values.put("description", description);
