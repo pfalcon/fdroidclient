@@ -15,9 +15,16 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-        <TextView android:id="@+id/uri"
+        <TextView android:id="@+id/repo_name"
             android:textSize="21sp"
             android:textStyle="bold"
+            android:singleLine="true"
+            android:ellipsize="marquee"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"/>
+
+        <TextView android:id="@+id/uri"
+            android:textSize="18sp"
             android:singleLine="true"
             android:ellipsize="marquee"
             android:layout_width="fill_parent"

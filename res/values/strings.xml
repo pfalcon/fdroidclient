@@ -75,6 +75,9 @@
 
 	<string name="repo_add_url">Repository address</string>
 
+	<string name="repo_add_name">Repository short name</string>
+	<string name="repo_add_name_default">another repo</string>
+
 	<string name="isinst">Installed: </string>
 
 	<string name="install">Install </string>

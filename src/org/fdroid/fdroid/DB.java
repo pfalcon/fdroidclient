@@ -346,12 +346,15 @@ public class DB {
     // The TABLE_REPO table stores the details of the repositories in use.
     private static final String TABLE_REPO = "fdroid_repo";
     private static final String CREATE_TABLE_REPO = "create table "
-            + TABLE_REPO + " (id integer primary key, address text not null, "
+            + TABLE_REPO + " (id integer primary key, "
+            + "name text, "
+            + "address text not null, "
             + "inuse integer not null, " + "priority integer not null,"
             + "pubkey text, lastetag text);";
 
     public static class Repo {
         public int id;
+        public String name; // short name for easy identification
         public String address;
         public boolean inuse;
         public int priority;
@@ -359,7 +362,7 @@ public class DB {
         public String lastetag; // last etag we updated from, null forces update
     }
 
-    private final int DBVersion = 20;
+    private final int DBVersion = 21;
 
     private static void createAppApk(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_APP);
@@ -390,6 +393,8 @@ public class DB {
 
             db.execSQL(CREATE_TABLE_REPO);
             ContentValues values = new ContentValues();
+            values.put("name",
+                    mContext.getString(R.string.default_repo_name));
             values.put("address",
                     mContext.getString(R.string.default_repo_address));
             values.put("pubkey",
@@ -431,6 +436,14 @@ public class DB {
                     values.put("lastetag", (String) null);
                     db.insert(TABLE_REPO, null, values);
                 }
+            }
+
+            if (oldVersion < 21) {
+                db.execSQL("alter table " + TABLE_REPO + " add name string");
+                String name = mContext.getString(R.string.default_repo_name);
+                db.execSQL("update " + TABLE_REPO
+                        + " set name=? like '%/f-droid.org/%'",
+                        new String[] { name });
             }
 
         }
@@ -993,7 +1006,7 @@ public class DB {
         Cursor c = null;
         try {
             c = db.query(TABLE_REPO, new String[] { "address, inuse",
-                    "priority", "pubkey", "lastetag" },
+                    "priority", "pubkey", "lastetag", "name" },
                     "id = " + Integer.toString(id), null, null, null, null);
             if (!c.moveToFirst())
                 return null;
@@ -1004,6 +1017,7 @@ public class DB {
             repo.priority = c.getInt(2);
             repo.pubkey = c.getString(3);
             repo.lastetag = c.getString(4);
+            repo.name = c.getString(5);
             return repo;
         } finally {
             if (c != null)
@@ -1017,7 +1031,7 @@ public class DB {
         Cursor c = null;
         try {
             c = db.rawQuery(
-                    "select id, address, inuse, priority, pubkey, lastetag from "
+                    "select id, address, inuse, priority, pubkey, lastetag, name from "
                             + TABLE_REPO + " order by priority", null);
             c.moveToFirst();
             while (!c.isAfterLast()) {
@@ -1028,6 +1042,7 @@ public class DB {
                 repo.priority = c.getInt(3);
                 repo.pubkey = c.getString(4);
                 repo.lastetag = c.getString(5);
+                repo.name = c.getString(6);
                 repos.add(repo);
                 c.moveToNext();
             }
@@ -1052,6 +1067,7 @@ public class DB {
         values.put("priority", repo.priority);
         values.put("pubkey", repo.pubkey);
         values.put("lastetag", (String) null);
+        values.put("name", repo.name);
         db.update(TABLE_REPO, values, "address = ?",
                 new String[] { repo.address });
     }
@@ -1063,9 +1079,10 @@ public class DB {
                 new String[] { repo.address });
     }
 
-    public void addRepo(String address, int priority, String pubkey,
+    public void addRepo(String name, String address, int priority, String pubkey,
             boolean inuse) {
         ContentValues values = new ContentValues();
+        values.put("name", name);
         values.put("address", address);
         values.put("inuse", inuse ? 1 : 0);
         values.put("priority", priority);
