@@ -1394,6 +1394,10 @@ public class DB {
                     db.delete(TABLE_APP, "id = ?", new String[] { app.id });
                 }
             }
+            // Deleted server may have shadowed some APKs from other server(s)
+            // to get correct state, we need to re-fetch/re-parse indexes from
+            // all remaining repos.
+            db.execSQL("update " + TABLE_REPO + " set lastetag=null");
             db.setTransactionSuccessful();
         } finally {
             db.endTransaction();
