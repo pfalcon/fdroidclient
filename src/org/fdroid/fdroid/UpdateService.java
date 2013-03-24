@@ -43,6 +43,8 @@ import android.util.Log;
 
 public class UpdateService extends IntentService {
 
+    ResultReceiver receiver;
+
     public UpdateService() {
         super("UpdateService");
     }
@@ -71,13 +73,21 @@ public class UpdateService extends IntentService {
         }
     }
 
+    protected void updateProgress(String msg) {
+        if (receiver != null) {
+            Bundle resultData = new Bundle();
+            resultData.putString("msg", msg);
+            receiver.send(2, resultData);
+        }
+    }
+
     protected void onHandleIntent(Intent intent) {
 
         // We might be doing a scheduled run, or we might have been launched by
         // the app in response to a user's request. If we get this receiver,
         // it's
         // the latter...
-        ResultReceiver receiver = intent.getParcelableExtra("receiver");
+        receiver = intent.getParcelableExtra("receiver");
 
         long startTime = System.currentTimeMillis();
         String errmsg = "";
@@ -124,6 +134,7 @@ public class UpdateService extends IntentService {
             boolean success = true;
             for (DB.Repo repo : repos) {
                 if (repo.inuse) {
+                    updateProgress("Scanning " + repo.address + "...");
                     StringBuilder newetag = new StringBuilder();
                     String err = RepoXMLHandler.doUpdate(getBaseContext(),
                             repo, apps, newetag, keeprepos);
@@ -142,6 +153,7 @@ public class UpdateService extends IntentService {
             }
 
             if (success) {
+                updateProgress("Marking non-updated apps...");
                 Vector<DB.App> acceptedapps = new Vector<DB.App>();
                 Vector<DB.App> prevapps = ((FDroidApp) getApplication())
                         .getApps();
@@ -184,6 +196,7 @@ public class UpdateService extends IntentService {
                         }
                     }
 
+                    updateProgress("Updating new apps...");
                     prevUpdates = db.beginUpdate(prevapps);
                     for (DB.App app : apps) {
                         if (db.updateApplication(app))

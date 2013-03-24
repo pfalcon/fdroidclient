@@ -485,6 +485,12 @@ public class FDroid extends TabActivity implements OnItemClickListener,
 
         @Override
         protected void onReceiveResult(int resultCode, Bundle resultData) {
+            if (resultCode == 2) {
+                // progress notification
+                pd.setMessage(resultData.getString("msg"));
+                return;
+            }
+
             if (resultCode == 1) {
                 Toast.makeText(FDroid.this, resultData.getString("errmsg"),
                         Toast.LENGTH_LONG).show();
